@@ -126,6 +126,15 @@ class DatabaseManager:
         self.cursor.execute("SELECT * FROM tasks WHERE assignee_id = ?", (user_id,))
         rows = self.cursor.fetchall()
         return [self.get_task_by_id(row["id"]) for row in rows]
+    
+    def get_overdue_tasks(self) -> list[Task]:
+        """Возвращает список просроченных задач (у которых due_date < текущей даты и статус != 'completed')"""
+        now = datetime.now().isoformat()
+        self.cursor.execute(
+            "SELECT * FROM tasks WHERE due_date < ? AND status != 'completed'", (now,)
+        )
+        rows = self.cursor.fetchall()
+        return [self.get_task_by_id(row["id"]) for row in rows]
 
     # ---------- PROJECTS ----------
     def add_project(self, project: Project) -> int:
