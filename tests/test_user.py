@@ -1,16 +1,54 @@
+import sys
+import os
+import tempfile
+from datetime import datetime, timedelta
+
+# Добавляем корень проекта в sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+
+from controllers.user_controller import UserController
+from controllers.user_controller import UserController
+from database.database_manager import DatabaseManager
+from models.project import Project
+from models.user import User
+from controllers.project_controller import ProjectController
+from controllers.task_controller import TaskController
+
+
+
 class TestUserController:
     """Тесты для UserController"""
 
     def setup_method(self):
         """Настройка перед каждым тестом"""
-        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
-        self.db_manager = DatabaseManager(self.temp_db.name)
+        import tempfile
+        import os
+        from datetime import datetime, timedelta
+        from models.project import Project
+        from models.user import User
+        from database.database_manager import DatabaseManager
+        from controllers.task_controller import TaskController
+
+        temp_dir = tempfile.gettempdir()
+        self.temp_db_path = os.path.join(temp_dir, "test_temp.db")
+        self.db_manager = DatabaseManager(self.temp_db_path)
         self.db_manager.create_tables()
         self.controller = UserController(self.db_manager)
 
+        # Создаем тестовые проекты и пользователей
+        self.project_id = self.db_manager.add_project(
+            Project("Тестовый проект", "Описание проекта", datetime.now(), datetime.now() + timedelta(days=30))
+        )
+        self.user_id = self.db_manager.add_user(
+            User("test_user", "test@example.com", "developer")
+        )
+
     def teardown_method(self):
         self.db_manager.close()
-        os.unlink(self.temp_db.name)
+        import os
+        if os.path.exists(self.temp_db_path):
+            os.unlink(self.temp_db_path)
 
     def test_add_user(self):
         """Тест добавления пользователя"""

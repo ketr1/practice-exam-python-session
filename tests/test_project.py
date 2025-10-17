@@ -1,16 +1,43 @@
+import sys
+import os
+import tempfile
+from datetime import datetime, timedelta
+from controllers.user_controller import UserController
+from controllers.project_controller import ProjectController
+from database.database_manager import DatabaseManager
+from models.project import Project
+from models.user import User
+from controllers.task_controller import TaskController
+
+
+# Добавляем корень проекта в sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+
+
+
 class TestProjectController:
     """Тесты для ProjectController"""
 
     def setup_method(self):
         """Настройка перед каждым тестом"""
-        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
-        self.db_manager = DatabaseManager(self.temp_db.name)
+        import tempfile
+        import os
+        from datetime import datetime, timedelta
+        from database.database_manager import DatabaseManager
+        from controllers.project_controller import ProjectController
+
+        temp_dir = tempfile.gettempdir()
+        self.temp_db_path = os.path.join(temp_dir, "test_temp_project.db")
+        self.db_manager = DatabaseManager(self.temp_db_path)
         self.db_manager.create_tables()
         self.controller = ProjectController(self.db_manager)
 
     def teardown_method(self):
         self.db_manager.close()
-        os.unlink(self.temp_db.name)
+        import os
+        if os.path.exists(self.temp_db_path):
+            os.unlink(self.temp_db_path)
 
     def test_add_project(self):
         """Тест добавления проекта"""

@@ -1,25 +1,32 @@
-import pytest
 import sys
 import os
-from datetime import datetime, timedelta
 import tempfile
-from database.database_manager import DatabaseManager
+from datetime import datetime, timedelta
 
-# Добавляем путь к модулям проекта
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+# Добавляем корень проекта в sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from controllers.task_controller import TaskController
-from controllers.project_controller import ProjectController
-from controllers.user_controller import UserController
+from database.database_manager import DatabaseManager
+from models.project import Project
+from models.user import User
 
 
 class TestTaskController:
-    """Тесты для TaskController"""
 
     def setup_method(self):
         """Настройка перед каждым тестом"""
-        self.temp_db = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
-        self.db_manager = DatabaseManager(self.temp_db.name)
+        import tempfile
+        import os
+        from datetime import datetime, timedelta
+        from models.project import Project
+        from models.user import User
+        from database.database_manager import DatabaseManager
+        from controllers.task_controller import TaskController
+
+        temp_dir = tempfile.gettempdir()
+        self.temp_db_path = os.path.join(temp_dir, "test_temp.db")
+        self.db_manager = DatabaseManager(self.temp_db_path)
         self.db_manager.create_tables()
         self.controller = TaskController(self.db_manager)
 
@@ -32,11 +39,15 @@ class TestTaskController:
         )
 
     def teardown_method(self):
+        """Очистка после теста"""
         self.db_manager.close()
-        os.unlink(self.temp_db.name)
+        import os
+        if os.path.exists(self.temp_db_path):
+            os.unlink(self.temp_db_path)
 
     def test_add_task(self):
         """Тест добавления задачи"""
+        from datetime import datetime, timedelta
         task_id = self.controller.add_task(
             "Тестовая задача",
             "Описание тестовой задачи",
@@ -45,6 +56,8 @@ class TestTaskController:
             self.project_id,
             self.user_id
         )
+
+        assert task_id is not None
 
         assert task_id is not None
         assert isinstance(task_id, int)
